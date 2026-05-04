@@ -1,0 +1,44 @@
+{
+  "nodes": [
+    { "id": "A", "x": 100, "y": 200, "label": "Source (A)" },
+    { "id": "B", "x": 300, "y": 100, "label": "Node B" },
+    { "id": "C", "x": 100, "y": 400, "label": "Node C" },
+    { "id": "D", "x": 300, "y": 400, "label": "Node D" },
+    { "id": "E", "x": 500, "y": 200, "label": "Destination (E)" }
+  ],
+  "edges": [
+    { "source": "A", "target": "B", "dist": 2, "initialPheromone": 1 },
+    { "source": "B", "target": "E", "dist": 4, "initialPheromone": 1 },
+    { "source": "A", "target": "C", "dist": 4, "initialPheromone": 1 },
+    { "source": "C", "target": "D", "dist": 3, "initialPheromone": 1 },
+    { "source": "B", "target": "D", "dist": 3, "initialPheromone": 1 },
+    { "source": "D", "target": "E", "dist": 2, "initialPheromone": 1 }
+  ],
+  "simulation": {
+    "alpha": 1,
+    "beta": 2,
+    "Q": 10,
+    "evaporationRate": 0.9,
+    "sourceNode": "A",
+    "destNode": "E"
+  },
+  "scenarios": {
+    "normal": {
+      "name": "Normal Network",
+      "description": "All nodes and links are active."
+    },
+    "failure": {
+      "name": "Node Failure",
+      "description": "Node D is removed. System must adapt.",
+      "removeNodes": ["D"]
+    },
+    "mobility": {
+      "name": "High Mobility",
+      "description": "Node B moves farther away, increasing distances.",
+      "updateEdges": [
+        { "source": "A", "target": "B", "dist": 8 },
+        { "source": "B", "target": "E", "dist": 10 }
+      ]
+    }
+  }
+}
