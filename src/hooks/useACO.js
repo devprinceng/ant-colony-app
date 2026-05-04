@@ -162,8 +162,10 @@ export const useACO = () => {
         totalDelay: prev.totalDelay + pathLength
       }));
       addLog('data', `Packet delivered via ${path.join(' → ')}`);
+      return path;
     } else {
       addLog('error', 'Packet lost: No valid path found.');
+      return null;
     }
   }, [edges]);
 

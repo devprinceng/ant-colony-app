@@ -12,7 +12,8 @@
     { "source": "A", "target": "C", "dist": 4, "initialPheromone": 1 },
     { "source": "C", "target": "D", "dist": 3, "initialPheromone": 1 },
     { "source": "B", "target": "D", "dist": 3, "initialPheromone": 1 },
-    { "source": "D", "target": "E", "dist": 2, "initialPheromone": 1 }
+    { "source": "D", "target": "E", "dist": 2, "initialPheromone": 1 },
+    { "source": "C", "target": "E", "dist": 6, "initialPheromone": 1 }
   ],
   "simulation": {
     "alpha": 1,

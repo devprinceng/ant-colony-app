@@ -1,7 +1,29 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-const NetworkGraph = ({ nodes, edges }) => {
+const MovingAnt = ({ path, nodes, onComplete, color = "#4facfe" }) => {
+  const pathCoordinates = path.map(nodeId => nodes.find(n => n.id === nodeId));
+
+  return (
+    <motion.circle
+      r={4}
+      fill={color}
+      initial={{ cx: pathCoordinates[0].x, cy: pathCoordinates[0].y }}
+      animate={{
+        cx: pathCoordinates.map(p => p.x),
+        cy: pathCoordinates.map(p => p.y),
+      }}
+      transition={{
+        duration: path.length * 0.6,
+        ease: "linear",
+      }}
+      onAnimationComplete={onComplete}
+      className="node-shadow"
+    />
+  );
+};
+
+const NetworkGraph = ({ nodes, edges, activeAnts = [], onAntComplete }) => {
   return (
     <div className="relative w-full h-[500px] glass-card overflow-hidden rounded-2xl">
       <svg className="w-full h-full" viewBox="0 0 600 500">
@@ -25,11 +47,7 @@ const NetworkGraph = ({ nodes, edges }) => {
                 strokeOpacity={opacity}
                 strokeWidth={strokeWidth}
                 className="edge-glow"
-                initial={{ pathLength: 0 }}
-                animate={{ pathLength: 1 }}
-                transition={{ duration: 0.5 }}
               />
-              {/* Distance and Pheromone Labels */}
               <text
                 x={(sourceNode.x + targetNode.x) / 2}
                 y={(sourceNode.y + targetNode.y) / 2 - 10}
@@ -52,6 +70,17 @@ const NetworkGraph = ({ nodes, edges }) => {
             </g>
           );
         })}
+
+        {/* Animated Ants */}
+        {activeAnts.map(ant => (
+          <MovingAnt 
+            key={ant.id} 
+            path={ant.path} 
+            nodes={nodes} 
+            color={ant.type === 'data' ? '#10b981' : '#4facfe'}
+            onComplete={() => onAntComplete(ant.id)} 
+          />
+        ))}
 
         {/* Draw Nodes */}
         {nodes.map((node) => (

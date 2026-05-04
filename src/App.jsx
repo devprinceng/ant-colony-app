@@ -21,14 +21,34 @@ function App() {
   } = useACO();
 
   const [isDocOpen, setIsDocOpen] = useState(false);
+  const [activeAnts, setActiveAnts] = useState([]);
+
+  const addAntAnimation = (path, type = 'scout') => {
+    if (!path) return;
+    const id = Math.random().toString(36).substr(2, 9);
+    setActiveAnts(prev => [...prev, { id, path, type }]);
+  };
+
+  const removeAntAnimation = (id) => {
+    setActiveAnts(prev => prev.filter(ant => ant.id !== id));
+  };
+
+  const handleRunAnt = async () => {
+    const path = await runAnt();
+    addAntAnimation(path, 'scout');
+  };
+
+  const handleSendData = () => {
+    const path = sendDataPacket();
+    addAntAnimation(path, 'data');
+  };
 
   const handleSimulateBatch = async () => {
-    // To match the user's test cases: Send 50 packets
-    // First run some ants to establish paths
+    // For batch simulation, we skip individual animations to save performance
+    // but we run the logic as usual
     for(let i=0; i<10; i++) {
       await runAnt();
     }
-    // Then send 50 packets
     for(let i=0; i<50; i++) {
       sendDataPacket();
     }
@@ -72,11 +92,16 @@ function App() {
 
       {/* Metrics Bar */}
       <MetricsDashboard metrics={metrics} />
-
+ 
       <div className="dashboard-grid">
         {/* Main Graph Area */}
         <div className="main-content">
-          <NetworkGraph nodes={nodes} edges={edges} />
+          <NetworkGraph 
+            nodes={nodes} 
+            edges={edges} 
+            activeAnts={activeAnts} 
+            onAntComplete={removeAntAnimation} 
+          />
           
           <div className="glass-card p-6 rounded-2xl">
             <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Algorithm Parameters</h3>
@@ -104,8 +129,8 @@ function App() {
         {/* Sidebar: Controls & Logs */}
         <div className="sidebar">
           <ControlPanel 
-            onRunAnt={runAnt}
-            onSendData={sendDataPacket}
+            onRunAnt={handleRunAnt}
+            onSendData={handleSendData}
             onEvaporate={evaporate}
             onScenarioChange={applyScenario}
             currentScenario={activeScenario}
