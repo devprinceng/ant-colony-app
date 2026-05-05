@@ -1,16 +1,22 @@
-# React + Vite
+# 🐜 Ant Colony Optimization (ACO) Network Simulation
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A high-fidelity simulation of decentralized network routing using bio-inspired Ant Colony Optimization. Built for PhD-level research and network analysis.
 
-Currently, two official plugins are available:
+## 🚀 Key Features
+- **Real-time Ant Visualization**: Watch scouts discover the network and lay pheromone trails.
+- **Dynamic Adaptability**: Test network resilience against node failures and mobility.
+- **Research Metrics**: Live tracking of PDR (Packet Delivery Ratio), Delay, and Overhead.
+- **A-Z Documentation**: Built-in guide explaining the math and theory.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 📖 Documentation
+For a full technical and theoretical breakdown, see:
+👉 **[SYSTEM_DOCUMENTATION.md](./SYSTEM_DOCUMENTATION.md)**
 
-## React Compiler
+## 🛠️ Local Development
+```bash
+# Install dependencies
+npm install
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+# Start the simulation
+npm run dev
+```
