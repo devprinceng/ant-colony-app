@@ -117,8 +117,8 @@ const NetworkGraph = ({ nodes, edges, activeAnts = [], onAntComplete }) => {
         ))}
         {/* Graph Legend */}
         <g transform="translate(20, 460)">
-          <rect width="180" height="30" fill="rgba(255,255,255,0.05)" rx="8" />
-          <text x="10" y="20" fill="rgba(255,255,255,0.4)" fontSize="10">
+          <rect width="230" height="30" fill="rgba(255,255,255,0.05)" rx="8" />
+          <text x="12" y="20" fill="rgba(255,255,255,0.4)" fontSize="10">
             <tspan fontWeight="bold" fill="white">d</tspan> = Distance (Dist) | 
             <tspan fontWeight="bold" fill="#4facfe" dx="5">τ</tspan> = Pheromone (Pher)
           </text>
