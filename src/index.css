@@ -129,6 +129,46 @@ button:active {
   background: rgba(255, 255, 255, 0.2);
 }
 
+/* Global Button & Spacing Fixes */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.25rem;
+  border-radius: 12px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  margin: 4px; /* Force some external spacing */
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 2rem !important; /* Huge gap for the header */
+}
+
+.controls-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem !important; /* Forced gap for simulation buttons */
+}
+
+.scenario-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem !important;
+}
+
+.scenario-btn {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  border-radius: 12px;
+  gap: 1rem;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
 .doc-content-area {
   flex: 1;
   overflow-y: auto;

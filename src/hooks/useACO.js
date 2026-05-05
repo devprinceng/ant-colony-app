@@ -197,6 +197,14 @@ export const useACO = () => {
     setMetrics({ sent: 0, received: 0, totalDelay: 0, antPackets: 0, pdr: 0, avgDelay: 0, overhead: 0 });
   };
 
+  const resetSystem = useCallback(() => {
+    setEdges(configData.edges.map(e => ({ ...e, pheromone: e.initialPheromone })));
+    setMetrics({ sent: 0, received: 0, totalDelay: 0, antPackets: 0, pdr: 0, avgDelay: 0, overhead: 0 });
+    setLogs([{ type: 'system', message: 'System restarted. All data cleared.', time: new Date() }]);
+    setActiveScenario('normal');
+    setNodes(configData.nodes);
+  }, []);
+
   // Calculate high-level metrics
   useEffect(() => {
     setMetrics(prev => {
@@ -219,6 +227,7 @@ export const useACO = () => {
     runAnt,
     evaporate,
     sendDataPacket,
-    applyScenario
+    applyScenario,
+    resetSystem
   };
 };

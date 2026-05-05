@@ -17,7 +17,8 @@ function App() {
     runAnt, 
     evaporate, 
     sendDataPacket, 
-    applyScenario 
+    applyScenario,
+    resetSystem
   } = useACO();
 
   const [isDocOpen, setIsDocOpen] = useState(false);
@@ -41,6 +42,10 @@ function App() {
   const handleSendData = () => {
     const path = sendDataPacket();
     addAntAnimation(path, 'data');
+  };
+  const handleRestart = () => {
+    resetSystem();
+    setActiveAnts([]);
   };
 
   const handleSimulateBatch = async () => {
@@ -72,20 +77,20 @@ function App() {
           </p>
         </div>
         
-        <div className="flex items-center gap-3">
+        <div className="header-controls">
           <button 
             onClick={() => setIsDocOpen(true)}
-            className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 px-5 py-2.5 rounded-xl font-semibold transition-all"
+            className="btn bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 transition-all"
           >
             <BookOpen size={18} />
-            <span>Guide</span>
+            <span style={{ marginLeft: '8px' }}>Guide</span>
           </button>
           <button 
             onClick={handleSimulateBatch}
-            className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-5 py-2.5 rounded-xl font-semibold shadow-lg shadow-blue-500/20"
+            className="btn bg-blue-500 hover:bg-blue-600 text-white shadow-lg shadow-blue-500/20"
           >
             <Zap size={18} />
-            <span>Auto-Test (50 Packets)</span>
+            <span style={{ marginLeft: '8px' }}>Auto-Test (50 Packets)</span>
           </button>
         </div>
       </header>
@@ -132,6 +137,7 @@ function App() {
             onRunAnt={handleRunAnt}
             onSendData={handleSendData}
             onEvaporate={evaporate}
+            onRestart={handleRestart}
             onScenarioChange={applyScenario}
             currentScenario={activeScenario}
           />
