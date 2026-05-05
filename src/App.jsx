@@ -3,7 +3,7 @@ import NetworkGraph from './components/NetworkGraph';
 import ControlPanel from './components/ControlPanel';
 import MetricsDashboard from './components/MetricsDashboard';
 import LogsPanel from './components/LogsPanel';
-import DocumentationModal from './components/DocumentationModal';
+import InlineGuide from './components/DocumentationModal';
 import { Network, Globe, Zap, Info, BookOpen } from 'lucide-react';
 import { useState } from 'react';
 
@@ -80,9 +80,10 @@ function App() {
         <div className="header-controls">
           <button 
             onClick={() => setIsDocOpen(true)}
-            className="btn bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 transition-all"
+            className={`btn transition-all ${isDocOpen ? 'bg-blue-500/20 border-blue-400 text-white shadow-lg shadow-blue-500/10' : 'bg-white/5 hover:bg-white/10 border-white/10 text-gray-300'}`}
+            style={{ borderStyle: 'solid', borderWidth: '1px' }}
           >
-            <BookOpen size={18} />
+            <BookOpen size={18} className={isDocOpen ? 'text-blue-400' : ''} />
             <span style={{ marginLeft: '8px' }}>Guide</span>
           </button>
           <button 
@@ -97,6 +98,8 @@ function App() {
 
       {/* Metrics Bar */}
       <MetricsDashboard metrics={metrics} />
+
+      <InlineGuide isOpen={isDocOpen} onClose={() => setIsDocOpen(false)} />
  
       <div className="dashboard-grid">
         {/* Main Graph Area */}
@@ -163,7 +166,6 @@ function App() {
         </div>
       </footer>
 
-      <DocumentationModal isOpen={isDocOpen} onClose={() => setIsDocOpen(false)} />
     </div>
   );
 }
