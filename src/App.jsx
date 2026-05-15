@@ -24,10 +24,10 @@ function App() {
   const [isDocOpen, setIsDocOpen] = useState(false);
   const [activeAnts, setActiveAnts] = useState([]);
 
-  const addAntAnimation = (path, type = 'scout') => {
+  const addAntAnimation = (path, type = 'scout', label = null, dist = null) => {
     if (!path) return;
     const id = Math.random().toString(36).substr(2, 9);
-    setActiveAnts(prev => [...prev, { id, path, type }]);
+    setActiveAnts(prev => [...prev, { id, path, type, label, dist }]);
   };
 
   const removeAntAnimation = (id) => {
@@ -35,8 +35,19 @@ function App() {
   };
 
   const handleRunAnt = async () => {
-    const path = await runAnt();
-    addAntAnimation(path, 'scout');
+    for (let i = 0; i < 5; i++) {
+      // Stagger the starts slightly for better visualization
+      setTimeout(async () => {
+        const label = `Ant ${i + 1}`;
+        // Vary parameters to ensure diversity as requested by the client
+        // Ant 1 is standard, others are more exploratory
+        const alpha = i === 0 ? 1 : 0.5; 
+        const beta = i === 0 ? 2 : 4;   
+        
+        const { path, pathLength } = await runAnt(label, alpha, beta);
+        addAntAnimation(path, 'scout', label, pathLength);
+      }, i * 300);
+    }
   };
 
   const handleSendData = () => {
@@ -108,6 +119,7 @@ function App() {
             nodes={nodes} 
             edges={edges} 
             activeAnts={activeAnts} 
+            bestPathNodes={metrics.bestPathNodes}
             onAntComplete={removeAntAnimation} 
           />
           

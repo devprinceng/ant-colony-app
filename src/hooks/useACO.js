@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import configData from '../data/config.json';
 
 export const useACO = () => {
@@ -11,7 +11,9 @@ export const useACO = () => {
     antPackets: 0,
     pdr: 0,
     avgDelay: 0,
-    overhead: 0
+    overhead: 0,
+    bestPathDist: Infinity,
+    bestPathNodes: []
   });
   const [logs, setLogs] = useState([{ type: 'system', message: 'Simulation initialized.', time: new Date() }]);
   const [activeScenario, setActiveScenario] = useState('normal');
@@ -22,7 +24,7 @@ export const useACO = () => {
   };
 
   // Probability rule for ant movement
-  const calculateProbability = (currentNodeId, nextNodeId, availableEdges) => {
+  const calculateProbability = (currentNodeId, nextNodeId, availableEdges, customAlpha, customBeta) => {
     const edge = availableEdges.find(e => 
       (e.source === currentNodeId && e.target === nextNodeId) || 
       (e.target === currentNodeId && e.source === nextNodeId)
@@ -30,7 +32,8 @@ export const useACO = () => {
     
     if (!edge) return 0;
 
-    const { alpha, beta } = configData.simulation;
+    const alpha = customAlpha ?? configData.simulation.alpha;
+    const beta = customBeta ?? configData.simulation.beta;
     const tau = edge.pheromone;
     const eta = 1 / edge.dist;
 
@@ -43,7 +46,7 @@ export const useACO = () => {
     return numerator / denominator;
   };
 
-  const runAnt = useCallback(async () => {
+  const runAnt = useCallback(async (antLabel = "Scout", alphaOverride, betaOverride) => {
     setIsSimulating(true);
     const { sourceNode, destNode, Q } = configData.simulation;
     let currentNode = sourceNode;
@@ -72,7 +75,7 @@ export const useACO = () => {
         return {
           edge: e,
           target,
-          prob: calculateProbability(currentNode, target, neighbors)
+          prob: calculateProbability(currentNode, target, neighbors, alphaOverride, betaOverride)
         };
       });
 
@@ -97,7 +100,19 @@ export const useACO = () => {
       // Artificial delay for visualization if needed, but here we return the path
     }
 
-    addLog('ant', `Ant found path: ${path.join(' → ')} (Dist: ${pathLength})`);
+    addLog('ant', `${antLabel} found path: ${path.join(' → ')} (Dist: ${pathLength})`);
+    
+    setMetrics(prev => {
+      if (pathLength < prev.bestPathDist) {
+        addLog('system', `⭐ New Best Path found by ${antLabel}! Distance: ${pathLength}`);
+        return {
+          ...prev,
+          bestPathDist: pathLength,
+          bestPathNodes: path
+        };
+      }
+      return prev;
+    });
 
     // Backward Ant (Pheromone Update)
     setEdges(prevEdges => prevEdges.map(edge => {
@@ -114,7 +129,7 @@ export const useACO = () => {
     }));
 
     setIsSimulating(false);
-    return path;
+    return { path, pathLength };
   }, [edges]);
 
   const evaporate = useCallback(() => {
@@ -194,33 +209,29 @@ export const useACO = () => {
 
     setNodes(newNodes);
     setEdges(newEdges);
-    setMetrics({ sent: 0, received: 0, totalDelay: 0, antPackets: 0, pdr: 0, avgDelay: 0, overhead: 0 });
+    setMetrics({ sent: 0, received: 0, totalDelay: 0, antPackets: 0, pdr: 0, avgDelay: 0, overhead: 0, bestPathDist: Infinity, bestPathNodes: [] });
   };
 
   const resetSystem = useCallback(() => {
     setEdges(configData.edges.map(e => ({ ...e, pheromone: e.initialPheromone })));
-    setMetrics({ sent: 0, received: 0, totalDelay: 0, antPackets: 0, pdr: 0, avgDelay: 0, overhead: 0 });
+    setMetrics({ sent: 0, received: 0, totalDelay: 0, antPackets: 0, pdr: 0, avgDelay: 0, overhead: 0, bestPathDist: Infinity, bestPathNodes: [] });
     setLogs([{ type: 'system', message: 'System restarted. All data cleared.', time: new Date() }]);
     setActiveScenario('normal');
     setNodes(configData.nodes);
   }, []);
 
-  // Calculate high-level metrics
-  useEffect(() => {
-    setMetrics(prev => {
-      const pdr = prev.sent > 0 ? (prev.received / prev.sent) * 100 : 0;
-      const avgDelay = prev.received > 0 ? prev.totalDelay / prev.received : 0;
-      const totalPackets = prev.sent + prev.antPackets;
-      const overhead = totalPackets > 0 ? (prev.antPackets / totalPackets) * 100 : 0;
+  // Derived metrics
+  const pdr = metrics.sent > 0 ? (metrics.received / metrics.sent) * 100 : 0;
+  const avgDelay = metrics.received > 0 ? metrics.totalDelay / metrics.received : 0;
+  const totalPackets = metrics.sent + metrics.antPackets;
+  const overhead = totalPackets > 0 ? (metrics.antPackets / totalPackets) * 100 : 0;
 
-      return { ...prev, pdr, avgDelay, overhead };
-    });
-  }, [metrics.sent, metrics.received, metrics.antPackets]);
+  const finalMetrics = { ...metrics, pdr, avgDelay, overhead };
 
   return {
     nodes,
     edges,
-    metrics,
+    metrics: finalMetrics,
     logs,
     activeScenario,
     isSimulating,

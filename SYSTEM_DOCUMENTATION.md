@@ -73,6 +73,7 @@ When you launch the app:
 - **PDR**: Reliability of the current "Learned" path.
 - **Avg Delay**: Efficiency of the current "Learned" path.
 - **Overhead**: The cost of discovery (Scouts vs. Data).
+- **Best Path Found**: The shortest distance discovery achieved by the Ant Wave.
 
 ### 3. Control Panel (Right Sidebar)
 - **Scenarios**: Presets that modify the `config.json` data in real-time.

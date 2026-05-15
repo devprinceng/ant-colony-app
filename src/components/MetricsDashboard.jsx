@@ -1,4 +1,4 @@
-import { Activity, Clock, Cpu, BarChart3 } from 'lucide-react';
+import { Activity, Clock, Cpu, BarChart3, Trophy } from 'lucide-react';
 
 const MetricCard = ({ label, value, icon: Icon, color, suffix = "" }) => (
   <div className="glass-card p-4 rounded-xl border-l-4" style={{ borderLeftColor: color }}>
@@ -15,7 +15,7 @@ const MetricCard = ({ label, value, icon: Icon, color, suffix = "" }) => (
 
 const MetricsDashboard = ({ metrics }) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
       <MetricCard 
         label="Packet Delivery Ratio" 
         value={metrics.pdr} 
@@ -42,6 +42,13 @@ const MetricsDashboard = ({ metrics }) => {
         value={metrics.sent} 
         icon={BarChart3} 
         color="#8b5cf6" 
+      />
+      <MetricCard 
+        label="Best Path Found" 
+        value={metrics.bestPathDist === Infinity ? 0 : metrics.bestPathDist} 
+        icon={Trophy} 
+        color="#f43f5e" 
+        suffix="units"
       />
     </div>
   );

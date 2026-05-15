@@ -1,28 +1,77 @@
 import { motion } from 'framer-motion';
+import { useState } from 'react';
 
-const MovingAnt = ({ path, nodes, onComplete, color = "#4facfe" }) => {
+const MovingAnt = ({ path, nodes, onComplete, label, dist, color = "#4facfe" }) => {
   const pathCoordinates = path.map(nodeId => nodes.find(n => n.id === nodeId));
+  const [isFinished, setIsFinished] = useState(false);
+
+  const handleAnimationComplete = () => {
+    setIsFinished(true);
+    setTimeout(() => {
+      onComplete();
+    }, 2000); // Show result for 2 seconds
+  };
 
   return (
-    <motion.circle
-      r={4}
-      fill={color}
-      initial={{ cx: pathCoordinates[0].x, cy: pathCoordinates[0].y }}
+    <motion.g
+      initial={{ x: pathCoordinates[0].x, y: pathCoordinates[0].y }}
       animate={{
-        cx: pathCoordinates.map(p => p.x),
-        cy: pathCoordinates.map(p => p.y),
+        x: pathCoordinates.map(p => p.x),
+        y: pathCoordinates.map(p => p.y),
       }}
       transition={{
-        duration: path.length * 0.6,
+        duration: path.length * 0.8,
         ease: "linear",
       }}
-      onAnimationComplete={onComplete}
-      className="node-shadow"
-    />
+      onAnimationComplete={handleAnimationComplete}
+    >
+      <motion.circle 
+        r={isFinished ? 10 : 6} 
+        fill={color} 
+        animate={isFinished ? { scale: [1, 1.2, 1] } : {}}
+        transition={isFinished ? { repeat: Infinity, duration: 0.5 } : {}}
+        className="node-shadow" 
+      />
+      {label && (
+        <text
+          y={isFinished ? -25 : -12}
+          fill="white"
+          fontSize={isFinished ? "12" : "10"}
+          fontWeight="bold"
+          textAnchor="middle"
+          className="pointer-events-none"
+        >
+          {isFinished && dist ? `${label} (Dist: ${dist})` : label}
+        </text>
+      )}
+      {isFinished && (
+        <motion.text
+          y={-12}
+          initial={{ opacity: 0, y: 0 }}
+          animate={{ opacity: 1, y: -45 }}
+          fill="#fbbf24"
+          fontSize="14"
+          fontWeight="bold"
+          textAnchor="middle"
+        >
+          DONE!
+        </motion.text>
+      )}
+    </motion.g>
   );
 };
 
-const NetworkGraph = ({ nodes, edges, activeAnts = [], onAntComplete }) => {
+const NetworkGraph = ({ nodes, edges, activeAnts = [], bestPathNodes = [], onAntComplete }) => {
+  const isInBestPath = (source, target) => {
+    if (!bestPathNodes || bestPathNodes.length < 2) return false;
+    for (let i = 0; i < bestPathNodes.length - 1; i++) {
+      const n1 = bestPathNodes[i];
+      const n2 = bestPathNodes[i + 1];
+      if ((n1 === source && n2 === target) || (n1 === target && n2 === source)) return true;
+    }
+    return false;
+  };
+
   return (
     <div className="relative w-full h-[500px] glass-card overflow-hidden rounded-2xl">
       <svg className="w-full h-full" viewBox="0 0 600 500">
@@ -32,8 +81,10 @@ const NetworkGraph = ({ nodes, edges, activeAnts = [], onAntComplete }) => {
           const targetNode = nodes.find(n => n.id === edge.target);
           if (!sourceNode || !targetNode) return null;
 
-          const opacity = Math.min(0.1 + (edge.pheromone / 10), 0.9);
-          const strokeWidth = 2 + (edge.pheromone / 5);
+          const isBest = isInBestPath(edge.source, edge.target);
+          const opacity = isBest ? 0.8 : Math.min(0.1 + (edge.pheromone / 10), 0.9);
+          const strokeWidth = isBest ? 4 : 2 + (edge.pheromone / 5);
+          const strokeColor = isBest ? "#fbbf24" : "white";
 
           return (
             <g key={`edge-${index}`}>
@@ -42,10 +93,10 @@ const NetworkGraph = ({ nodes, edges, activeAnts = [], onAntComplete }) => {
                 y1={sourceNode.y}
                 x2={targetNode.x}
                 y2={targetNode.y}
-                stroke="white"
+                stroke={strokeColor}
                 strokeOpacity={opacity}
                 strokeWidth={strokeWidth}
-                className="edge-glow"
+                className={isBest ? "best-path-glow" : "edge-glow"}
               />
               <text
                 x={(sourceNode.x + targetNode.x) / 2}
@@ -76,7 +127,9 @@ const NetworkGraph = ({ nodes, edges, activeAnts = [], onAntComplete }) => {
             key={ant.id} 
             path={ant.path} 
             nodes={nodes} 
-            color={ant.type === 'data' ? '#10b981' : '#4facfe'}
+            label={ant.label}
+            dist={ant.dist}
+            color={ant.type === 'data' ? '#10b981' : ant.type === 'scout' ? '#4facfe' : '#fbbf24'}
             onComplete={() => onAntComplete(ant.id)} 
           />
         ))}
