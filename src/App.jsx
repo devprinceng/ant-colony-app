@@ -24,10 +24,10 @@ function App() {
   const [isDocOpen, setIsDocOpen] = useState(false);
   const [activeAnts, setActiveAnts] = useState([]);
 
-  const addAntAnimation = (path, type = 'scout', label = null, dist = null) => {
+  const addAntAnimation = (path, type = 'scout', label = null, dist = null, index = 0) => {
     if (!path) return;
     const id = Math.random().toString(36).substr(2, 9);
-    setActiveAnts(prev => [...prev, { id, path, type, label, dist }]);
+    setActiveAnts(prev => [...prev, { id, path, type, label, dist, index }]);
   };
 
   const removeAntAnimation = (id) => {
@@ -45,7 +45,7 @@ function App() {
         const beta = i === 0 ? 2 : 4;   
         
         const { path, pathLength } = await runAnt(label, alpha, beta);
-        addAntAnimation(path, 'scout', label, pathLength);
+        addAntAnimation(path, 'scout', label, pathLength, i);
       }, i * 300);
     }
   };

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import configData from '../data/config.json';
 
 export const useACO = () => {
@@ -18,6 +18,7 @@ export const useACO = () => {
   const [logs, setLogs] = useState([{ type: 'system', message: 'Simulation initialized.', time: new Date() }]);
   const [activeScenario, setActiveScenario] = useState('normal');
   const [isSimulating, setIsSimulating] = useState(false);
+  const bestPathDistRef = useRef(Infinity);
 
   const addLog = (type, message) => {
     setLogs(prev => [{ type, message, time: new Date() }, ...prev].slice(0, 50));
@@ -102,9 +103,13 @@ export const useACO = () => {
 
     addLog('ant', `${antLabel} found path: ${path.join(' → ')} (Dist: ${pathLength})`);
     
+    if (pathLength < bestPathDistRef.current) {
+      bestPathDistRef.current = pathLength;
+      addLog('system', `⭐ New Best Path found by ${antLabel}! Distance: ${pathLength}`);
+    }
+
     setMetrics(prev => {
       if (pathLength < prev.bestPathDist) {
-        addLog('system', `⭐ New Best Path found by ${antLabel}! Distance: ${pathLength}`);
         return {
           ...prev,
           bestPathDist: pathLength,
@@ -209,11 +214,13 @@ export const useACO = () => {
 
     setNodes(newNodes);
     setEdges(newEdges);
+    bestPathDistRef.current = Infinity;
     setMetrics({ sent: 0, received: 0, totalDelay: 0, antPackets: 0, pdr: 0, avgDelay: 0, overhead: 0, bestPathDist: Infinity, bestPathNodes: [] });
   };
 
   const resetSystem = useCallback(() => {
     setEdges(configData.edges.map(e => ({ ...e, pheromone: e.initialPheromone })));
+    bestPathDistRef.current = Infinity;
     setMetrics({ sent: 0, received: 0, totalDelay: 0, antPackets: 0, pdr: 0, avgDelay: 0, overhead: 0, bestPathDist: Infinity, bestPathNodes: [] });
     setLogs([{ type: 'system', message: 'System restarted. All data cleared.', time: new Date() }]);
     setActiveScenario('normal');

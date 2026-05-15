@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 
-const MovingAnt = ({ path, nodes, onComplete, label, dist, color = "#4facfe" }) => {
+const MovingAnt = ({ path, nodes, onComplete, label, dist, index, color = "#4facfe" }) => {
   const pathCoordinates = path.map(nodeId => nodes.find(n => n.id === nodeId));
   const [isFinished, setIsFinished] = useState(false);
 
@@ -9,8 +9,11 @@ const MovingAnt = ({ path, nodes, onComplete, label, dist, color = "#4facfe" }) 
     setIsFinished(true);
     setTimeout(() => {
       onComplete();
-    }, 2000); // Show result for 2 seconds
+    }, 3000); // Increased to 3 seconds so the user can read all results
   };
+
+  // Stack labels vertically when finished: Ant 1 at bottom, Ant 5 at top
+  const yOffset = isFinished ? -35 - (index * 22) : -15;
 
   return (
     <motion.g
@@ -33,29 +36,33 @@ const MovingAnt = ({ path, nodes, onComplete, label, dist, color = "#4facfe" }) 
         className="node-shadow" 
       />
       {label && (
-        <text
-          y={isFinished ? -25 : -12}
-          fill="white"
-          fontSize={isFinished ? "12" : "10"}
-          fontWeight="bold"
-          textAnchor="middle"
-          className="pointer-events-none"
+        <motion.g
+          animate={{ y: yOffset }}
+          transition={{ type: "spring", stiffness: 300, damping: 20 }}
         >
-          {isFinished && dist ? `${label} (Dist: ${dist})` : label}
-        </text>
-      )}
-      {isFinished && (
-        <motion.text
-          y={-12}
-          initial={{ opacity: 0, y: 0 }}
-          animate={{ opacity: 1, y: -45 }}
-          fill="#fbbf24"
-          fontSize="14"
-          fontWeight="bold"
-          textAnchor="middle"
-        >
-          DONE!
-        </motion.text>
+          {/* Label Background for better readability when stacked */}
+          {isFinished && (
+            <rect
+              x="-45"
+              y="-10"
+              width="90"
+              height="18"
+              rx="4"
+              fill="rgba(0,0,0,0.6)"
+              className="pointer-events-none"
+            />
+          )}
+          <text
+            fill="white"
+            fontSize={isFinished ? "11" : "10"}
+            fontWeight="bold"
+            textAnchor="middle"
+            className="pointer-events-none"
+            y={isFinished ? 3 : 0}
+          >
+            {isFinished && dist ? `✓ ${label}: Dist ${dist}` : label}
+          </text>
+        </motion.g>
       )}
     </motion.g>
   );
@@ -129,6 +136,7 @@ const NetworkGraph = ({ nodes, edges, activeAnts = [], bestPathNodes = [], onAnt
             nodes={nodes} 
             label={ant.label}
             dist={ant.dist}
+            index={ant.index}
             color={ant.type === 'data' ? '#10b981' : ant.type === 'scout' ? '#4facfe' : '#fbbf24'}
             onComplete={() => onAntComplete(ant.id)} 
           />
