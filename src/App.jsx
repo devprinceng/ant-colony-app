@@ -51,8 +51,10 @@ function App() {
   };
 
   const handleSendData = () => {
-    const path = sendDataPacket();
-    addAntAnimation(path, 'data');
+    const result = sendDataPacket();
+    if (result) {
+      addAntAnimation(result.path, 'data', 'Packet', result.pathLength);
+    }
   };
   const handleRestart = () => {
     resetSystem();
@@ -61,7 +63,6 @@ function App() {
 
   const handleSimulateBatch = async () => {
     // For batch simulation, we skip individual animations to save performance
-    // but we run the logic as usual
     for(let i=0; i<10; i++) {
       await runAnt();
     }

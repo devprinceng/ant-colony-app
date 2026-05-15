@@ -149,6 +149,7 @@ export const useACO = () => {
     const path = [sourceNode];
     const visited = new Set([sourceNode]);
     let pathLength = 0;
+    let totalPheromone = 0;
     let success = false;
 
     setMetrics(prev => ({ ...prev, sent: prev.sent + 1 }));
@@ -165,6 +166,7 @@ export const useACO = () => {
       const bestEdge = neighbors.reduce((prev, curr) => prev.pheromone > curr.pheromone ? prev : curr);
       
       pathLength += bestEdge.dist;
+      totalPheromone += bestEdge.pheromone;
       currentNode = bestEdge.source === currentNode ? bestEdge.target : bestEdge.source;
       path.push(currentNode);
       visited.add(currentNode);
@@ -181,8 +183,8 @@ export const useACO = () => {
         received: prev.received + 1,
         totalDelay: prev.totalDelay + pathLength
       }));
-      addLog('data', `Packet delivered via ${path.join(' → ')}`);
-      return path;
+      addLog('data', `Packet delivered via ${path.join(' → ')} (Total Pheromone: ${totalPheromone.toFixed(2)})`);
+      return { path, pathLength };
     } else {
       addLog('error', 'Packet lost: No valid path found.');
       return null;
@@ -198,7 +200,16 @@ export const useACO = () => {
     addLog('system', `Switching to ${scenario.name}: ${scenario.description}`);
 
     let newNodes = [...configData.nodes];
-    let newEdges = configData.edges.map(e => ({ ...e, pheromone: e.initialPheromone }));
+    
+    // Start with the full set of edges from config
+    // But pull pheromone levels from the current state if they exist
+    let newEdges = configData.edges.map(configEdge => {
+      const currentEdge = edges.find(e => e.source === configEdge.source && e.target === configEdge.target);
+      return { 
+        ...configEdge, 
+        pheromone: currentEdge ? currentEdge.pheromone : configEdge.initialPheromone 
+      };
+    });
 
     if (scenario.removeNodes) {
       newNodes = newNodes.filter(n => !scenario.removeNodes.includes(n.id));

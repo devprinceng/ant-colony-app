@@ -2,28 +2,37 @@ import { motion } from 'framer-motion';
 import { useState } from 'react';
 
 const MovingAnt = ({ path, nodes, onComplete, label, dist, index, color = "#4facfe" }) => {
-  const pathCoordinates = path.map(nodeId => nodes.find(n => n.id === nodeId));
+  // Stage 2: Create a full trip (Source -> Destination -> Source)
+  const forwardCoords = path.map(nodeId => nodes.find(n => n.id === nodeId));
+  const backwardCoords = [...forwardCoords].reverse();
+  const fullTrip = [...forwardCoords, ...backwardCoords];
+
   const [isFinished, setIsFinished] = useState(false);
+  const [isReturning, setIsReturning] = useState(false);
+
+  const handleAnimationUpdate = (latest) => {
+    // Detect when we are halfway (reached destination) to toggle "returning" state
+    // This is optional but can be used for visual cues
+  };
 
   const handleAnimationComplete = () => {
     setIsFinished(true);
     setTimeout(() => {
       onComplete();
-    }, 3000); // Increased to 3 seconds so the user can read all results
+    }, 3000);
   };
 
-  // Stack labels vertically when finished: Ant 1 at bottom, Ant 5 at top
   const yOffset = isFinished ? -35 - (index * 22) : -15;
 
   return (
     <motion.g
-      initial={{ x: pathCoordinates[0].x, y: pathCoordinates[0].y }}
+      initial={{ x: fullTrip[0].x, y: fullTrip[0].y }}
       animate={{
-        x: pathCoordinates.map(p => p.x),
-        y: pathCoordinates.map(p => p.y),
+        x: fullTrip.map(p => p.x),
+        y: fullTrip.map(p => p.y),
       }}
       transition={{
-        duration: path.length * 0.8,
+        duration: fullTrip.length * 0.6,
         ease: "linear",
       }}
       onAnimationComplete={handleAnimationComplete}
@@ -40,7 +49,6 @@ const MovingAnt = ({ path, nodes, onComplete, label, dist, index, color = "#4fac
           animate={{ y: yOffset }}
           transition={{ type: "spring", stiffness: 300, damping: 20 }}
         >
-          {/* Label Background for better readability when stacked */}
           {isFinished && (
             <rect
               x="-45"
@@ -89,8 +97,10 @@ const NetworkGraph = ({ nodes, edges, activeAnts = [], bestPathNodes = [], onAnt
           if (!sourceNode || !targetNode) return null;
 
           const isBest = isInBestPath(edge.source, edge.target);
-          const opacity = isBest ? 0.8 : Math.min(0.1 + (edge.pheromone / 10), 0.9);
-          const strokeWidth = isBest ? 4 : 2 + (edge.pheromone / 5);
+          const opacity = isBest ? 0.9 : Math.min(0.1 + (edge.pheromone / 10), 0.9);
+          
+          // Stage 3: Make Best Path significantly thicker
+          const strokeWidth = isBest ? 6 : 2 + (edge.pheromone / 5);
           const strokeColor = isBest ? "#fbbf24" : "white";
 
           return (
@@ -104,20 +114,23 @@ const NetworkGraph = ({ nodes, edges, activeAnts = [], bestPathNodes = [], onAnt
                 strokeOpacity={opacity}
                 strokeWidth={strokeWidth}
                 className={isBest ? "best-path-glow" : "edge-glow"}
+                initial={false}
+                animate={{ strokeWidth, strokeOpacity: opacity }}
               />
               <text
                 x={(sourceNode.x + targetNode.x) / 2}
-                y={(sourceNode.y + targetNode.y) / 2 - 10}
-                fill="rgba(255,255,255,0.4)"
+                y={(sourceNode.y + targetNode.y) / 2 - 12}
+                fill={isBest ? "#fbbf24" : "rgba(255,255,255,0.4)"}
                 fontSize="10"
+                fontWeight={isBest ? "bold" : "normal"}
                 textAnchor="middle"
               >
                 d:{edge.dist}
               </text>
               <text
                 x={(sourceNode.x + targetNode.x) / 2}
-                y={(sourceNode.y + targetNode.y) / 2 + 5}
-                fill="#4facfe"
+                y={(sourceNode.y + targetNode.y) / 2 + 8}
+                fill={isBest ? "#fbbf24" : "#4facfe"}
                 fontSize="10"
                 fontWeight="bold"
                 textAnchor="middle"
